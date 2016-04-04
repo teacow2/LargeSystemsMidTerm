@@ -40,6 +40,7 @@ void setup() {
   ballX = 250; ballY = 250;     
   rectMode(CENTER); 
   fill(255); 
+  // set the control of the ball to me (0) or the other player (1)
   controlMode = 1; 
   myRemoteLocation = new NetAddress("192.168.43.247",port);
   
@@ -56,7 +57,7 @@ void draw() {
   rect(playerX, playerY, paddleWidth, paddleHeight); 
   rect(oppX, oppY, paddleWidth, paddleHeight); 
   
-  if(controlMode == 0) { 
+  if(controlMode == 0) { //if I control the ball 
     // check borders
     if (ballY<1 || ballY>490) {ballMoveY *= -1;}
     
@@ -78,17 +79,21 @@ void draw() {
     }
     
     
-    
+    // new ball position 
     ballX += ballMoveX; ballY += ballMoveY;
+    
+    // send ball information 
     OscMessage ballMessage = new OscMessage("/ball/position");
     ballMessage.add(ballX);
     ballMessage.add(ballY); 
     oscP5.send(ballMessage, myRemoteLocation); 
    
 
-  } else if(controlMode == 1) {
+  } else if(controlMode == 1) { // if I don't control the ball, get the ball from the other player
     ballX = oscBallX; ballY= oscBallY; 
   }
+  
+  // this lets me view where the other player thinks the ball is; I use it to compare if I'm seeing my ball on my screen
   
   if(viewOppBall == true) { 
     fill(119,136,153);
@@ -99,7 +104,7 @@ void draw() {
   
 }
 
-void keyPressed() {
+void keyPressed() { // paddle movement and sending my paddle position
   if (key == CODED){
     if (keyCode == UP) {
        if(playerY>50) {playerY -= 20.0;}
@@ -119,7 +124,7 @@ void keyPressed() {
   }
 }
 
-void oscEvent(OscMessage theOscMessage) {
+void oscEvent(OscMessage theOscMessage) { //receiving ball and other player position messages 
   println("### received addrpattern: "+theOscMessage.addrPattern());
   println(" values(x): "+theOscMessage.get(0).floatValue()+" (y): "+theOscMessage.get(1).floatValue());
   
@@ -137,6 +142,7 @@ void oscEvent(OscMessage theOscMessage) {
   
 }
 
+// this is a little random movement code I added to make the game more interesting 
 float genBallMoveY() {
   float tempBallMoveY = random(-5,5);
   if(0 < tempBallMoveY && tempBallMoveY< 2) {tempBallMoveY = 2;}
